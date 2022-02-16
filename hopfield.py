@@ -85,7 +85,7 @@ class Hopfield:
         energys = []
         energy_old = np.infty
         energy_new = energy(x, self.W)
-        iteration = 0
+        i = 0
         # we keep running until we reach the lowest energy level
         while (energy_old > energy_new) and i < n_steps: 
             # Update iteration and store values
@@ -94,7 +94,7 @@ class Hopfield:
             xs.append(np.copy(x))
             energys.append(energy_old)
             # Synchronous update
-            x = np.sign(self.W @ x)
+            x = np.sign(x @ self.W)
             # Update energy function
             energy_new = energy(x, self.W)
         
@@ -115,21 +115,46 @@ def distort_patterns(X,n_bits) :
             Xd[i,bit_index] = -1 if X[i,bit_index] == 1 else 1
     return Xd
 
-def show_patterns(X) :
+def random_patterns(dim,n_patterns) :
+    X = np.random.randint(low=0,high=2,size=(n_patterns,dim))*2 - 1
+    return X
+
+def show_patterns(X,name='') :
     n_patterns = np.shape(X)[1]
     fig, ax = plt.subplots(1,n_patterns, figsize=(18,6))
     for i in range(n_patterns) :
         ax[i].imshow(X[:,[i]],cmap='binary')
-        ax[i].set_title('x{}'.format(i+1))
+        ax[i].set_title('x{}{}'.format(i+1,name))
 
-def show_patterns_distorted(X,Xd,recovered=False) :
+def show_patterns_distorted(X,Xd,name='',recovered=False) :
     n_patterns = np.shape(X)[1]
     fig, ax = plt.subplots(1,2*n_patterns, figsize=(18,6))
     for i in range(n_patterns) :
         ax[2*i].imshow(X[:,[i]],cmap='binary')
-        ax[2*i].set_title('x{}'.format(i+1))
+        ax[2*i].set_title('x{}{}'.format(i+1,name))
         ax[2*i+1].imshow(Xd[:,[i]],cmap='binary')
         ax[2*i+1].set_title('x{}d'.format(i+1) + ('_rec' if recovered else ''))
+
+def show_img_patterns(X,name='') :
+    n_patterns = np.shape(X)[0]
+    dim = np.shape(X)[1]
+    sidesize = int(np.sqrt(dim))
+    fig, ax = plt.subplots(1,n_patterns, figsize=(18,6))
+    for i in range(n_patterns) :
+        ax[i].imshow(X[[i],:].reshape((sidesize,sidesize)).T,cmap='binary')
+        ax[i].set_title('x{}{}'.format(i+1,name))
+
+def show_img_patterns_distorted(X,Xd,name='',recovered=False) :
+    n_patterns = np.shape(X)[0]
+    dim = np.shape(X)[1]
+    sidesize = int(np.sqrt(dim))
+    fig, ax = plt.subplots(n_patterns,2, figsize=(8,14))
+    for i in range(n_patterns) :
+        ax[i,0].imshow(X[[i],:].reshape((sidesize,sidesize)).T,cmap='binary')
+        ax[i,0].set_title('x{}{}'.format(i+1,name))
+        ax[i,1].imshow(Xd[[i],:].reshape((sidesize,sidesize)).T,cmap='binary')
+        ax[i,1].set_title('x{}d'.format(i+1) + ('_rec' if recovered else ''))
+
         
 
 
