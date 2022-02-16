@@ -12,8 +12,10 @@
 # jmvh@kth.se 
 
 # Load packages
+from attr import attr
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 
 # Auxiliary variables
 colors = ['#1E90FF','#FF69B4']
@@ -28,7 +30,6 @@ class Hopfield:
     def train_W(self,X) :
         # Compute weight matrix
         N = np.shape(X)[1]
-        # Averaged outer vector
         W = (1/N)*(X.T @ X)
         # Fill diagonal with zeros
         np.fill_diagonal(W,0)
@@ -37,6 +38,24 @@ class Hopfield:
     def plot_weights(self) :
         plt.imshow(self.W)
         plt.colorbar()
+
+    def find_attractors(self,n_steps) :
+        # Generate possible input vectors
+        X = np.array(list(itertools.product([-1, 1], repeat=self.dim)))
+        n_combs = np.shape(X)[0]
+        # Apply update rule to all of them and find store attractors
+        attractors = []
+        for i in range(n_combs) :
+            # Input pattern
+            x = X[[i],:]
+            # Iterate until we reach attractor
+            xs, energys = self.asynchronous_recall(x,n_steps)
+            attractor = list(xs[-1].reshape(-1))
+            # Append attractor if not already in the list
+            if attractor not in attractors :
+                attractors.append(attractor)
+
+        return np.array(attractors)
 
     def asynchronous_recall(self,x,n_steps) :
         # Store evolution of vector and energy over iterations
@@ -85,6 +104,17 @@ class Hopfield:
 def energy(x, W):
     return -0.5 * x @ W @ x.T
 
+def distort_patterns(X,n_bits) :
+    Xd = np.copy(X)
+    n_patterns = np.shape(X)[0]
+    dim = np.shape(X)[1]
+    bits_indices = list(range(dim))
+    for i in range(n_patterns) :
+        bits_to_distort = np.random.choice(bits_indices,size=n_bits,replace=False)
+        for bit_index in bits_to_distort :
+            Xd[i,bit_index] = -1 if X[i,bit_index] == 1 else 1
+    return Xd
+
 def show_patterns(X) :
     n_patterns = np.shape(X)[1]
     fig, ax = plt.subplots(1,n_patterns, figsize=(18,6))
@@ -99,7 +129,7 @@ def show_patterns_distorted(X,Xd,recovered=False) :
         ax[2*i].imshow(X[:,[i]],cmap='binary')
         ax[2*i].set_title('x{}'.format(i+1))
         ax[2*i+1].imshow(Xd[:,[i]],cmap='binary')
-        ax[2*i+1].set_title('x{}d'.format(i+1) + '_rec' if recovered else '')
+        ax[2*i+1].set_title('x{}d'.format(i+1) + ('_rec' if recovered else ''))
         
 
 
