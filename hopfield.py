@@ -19,7 +19,7 @@ import itertools
 # Auxiliary variables
 colors = ['#1E90FF','#FF69B4']
 
-# RADIAL BASIS FUNCTIONS
+# HOPFIELD NETWORK
 class Hopfield:
     def __init__(self, dim):
         """ Constructor of the Hopfield Network."""
