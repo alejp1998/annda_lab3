@@ -26,10 +26,13 @@ class Hopfield:
         self.dim = dim
         self.W = np.zeros((dim,dim))
 
-    def train_W(self,X,zero_diag=False) :
+    def train_W(self,X,activity=0,zero_diag=False) :
         # Compute weight matrix
         N = X.shape[1]
-        W = (1/N)*(X.T @ X)
+        if activity == 0:
+            W = (1/N)*(X.T @ X)
+        else:
+            W = ((X-activity).T @ (X-activity))
         if zero_diag :
             # Fill diagonal with zeros
             np.fill_diagonal(W,0)
@@ -65,7 +68,7 @@ class Hopfield:
 
         return np.array(attractors)
 
-    def stable_memories(self,Xorig,Xd) :
+    def stable_memories(self,Xorig,Xd,bias=0) :
         # Find # of patterns that remain stable
         n_patterns = Xd.shape[0]
         n_matches = 0
@@ -73,13 +76,13 @@ class Hopfield:
             # Input pattern
             x = Xd[[i],:]
             # Run one step async recall over pattern
-            xs, energys = self.async_recall(x,2)
+            xs, energys = self.async_recall(x,2,bias)
             # Check if it matches with assoc memory
             n_matches += (Xorig[[i],:] == xs[-1]).all()
         
         return n_matches
 
-    def async_recall(self,x,n_steps) :
+    def async_recall(self,x,n_steps,bias=0) :
         # Store evolution of vector and energy over iterations
         xs = []
         energys = []
@@ -95,7 +98,10 @@ class Hopfield:
             energys.append(energy_old)
             # Asynchronous update
             for ind in np.random.permutation(range(self.dim)):
-                x[:,ind] = np.sign(x @ self.W[:,[ind]]) 
+                if bias == 0:
+                    x[:,ind] = np.sign(x @ self.W[:,[ind]]) 
+                else:
+                    x[:,ind] = 0.5 + 0.5*np.sign(x @ self.W[:,[ind]] - bias*self.dim)
             # Update energy function
             energy_new = energy(x, self.W)
         
