@@ -89,6 +89,7 @@ class Hopfield:
         energy_old = np.infty
         energy_new = energy(x, self.W)
         i = 0
+        n_patterns = x.shape[0]
         # We keep running until we reach the lowest energy level
         while (energy_old > energy_new) and i < n_steps: 
             # Update iteration and store values
@@ -101,8 +102,12 @@ class Hopfield:
                 if bias == 0:
                     x[:,ind] = np.sign(x @ self.W[:,[ind]]) 
                 else:
-                    #x[:,ind] = 0.5 + 0.5*np.sign(x @ self.W[:,[ind]] - bias)
-                    x[:,ind] = 0.5 + 0.5*np.sign(np.sum(self.W @ x.T - bias,axis=0))
+                    x[:,ind] = 0.5 + 0.5*np.sign(x @ self.W[:,[ind]] - bias)
+                    sumj = 0
+                    for k in range(n_patterns):
+                        sumj = sumj + x @ self.W[:,[k]] - bias
+                    x[:,ind] = 0.5 + 0.5*sumj
+
             # Update energy function
             energy_new = energy(x, self.W)
         
