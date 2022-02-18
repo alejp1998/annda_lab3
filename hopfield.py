@@ -101,7 +101,8 @@ class Hopfield:
                 if bias == 0:
                     x[:,ind] = np.sign(x @ self.W[:,[ind]]) 
                 else:
-                    x[:,ind] = 0.5 + 0.5*np.sign(x @ self.W[:,[ind]] - bias*self.dim)
+                    #x[:,ind] = 0.5 + 0.5*np.sign(x @ self.W[:,[ind]] - bias)
+                    x[:,ind] = 0.5 + 0.5*np.sign(np.sum(self.W @ x.T - bias,axis=0))
             # Update energy function
             energy_new = energy(x, self.W)
         
